@@ -31,27 +31,35 @@ def main():
     excluded = string.printable.translate(None, allowed)
     #Initialize a dictionary that maps line_number:tweet_score
     tweet_sentiment = {}
-    #Initailize a file to save the score of each tweet
-#    score_tweets = open("sentiment_tweets.txt", "w")
     #As a by-product, create a file with every tweet
     text_tweets = open("tweets.txt", "w")
-#    as_list_tweets = list(tweet_file)
+    #For every tweet in json format
     for i, line in enumerate(tweet_file):
-        py_str = json.loads(line)
-        if 'text' in py_str.keys():
-            tweet = py_str['text'].encode('utf-8')
+        #Format as python dictionary
+        py_stru = json.loads(line)
+        #If it is a valid tweet
+        if 'text' in py_stru.keys():
+            #Encode that tweet in readable characters
+            tweet = py_stru['text'].encode('utf-8')
+            #Write tweet in the text_tweet file
             text_tweets.write(tweet + '\n')
+            #Exclude non-letter characters that are not in the sentiment dictionary
             nice_tweet = re.sub('[' + excluded + ']', " ", tweet)
+            #Calculate the tweet score
             tweet_score = 0
-            for term in tweet.lower().split():
+            #For every word in the tweet
+            for term in nice_tweet.lower().split():
+                #If term is in the sentimen dictionary...
                 if term in sentiment.keys():
+                    #add its score to the tweet score
                     tweet_score = tweet_score + sentiment[term]
+            #Calculates the total tweet_score
             tweet_sentiment[i] = tweet_score
+        #If it is not a valid tweet, tweet_score = NaN
         else:
             tweet_sentiment[i] = float('NaN')
-	print(str(tweet_sentiment[i]) + '\n')
- #       score_tweets.write(str(tweet_sentiment[i]) + '\n')
-#    score_tweets.close()
+        #Print the tweet score
+	print(str(tweet_sentiment[i]))
     text_tweets.close()
     tweet_file.close()
     
