@@ -5,12 +5,6 @@ import sys
 import string
 from collections import Counter
 
-def has_text(py_line):
-    answer = False
-    if 'text' in py_line.keys():
-        answer = True
-    return answer
-
 def has_hashtags(py_line):
     answer = False
     if 'entities' in py_line.keys():
@@ -40,10 +34,10 @@ def main():
             hashtag_counter += Counter(nice_hashtags)
     for (hashtag, frequency) in hashtag_counter.most_common(10):
         print(hashtag + " " + str(frequency))
+    #Not required: number of hashtags and users
+    #print(str(len(hashtag_counter)) + " hashtags , written by " + 
+    #      str(count) + " users.")
     #Close tweet_file
-    print ('users... '+ str(count))
-    print ('ht... ' + str(len(hashtag_counter)))
-#    print hashtag_counter
     tweet_file.close()
     
 
