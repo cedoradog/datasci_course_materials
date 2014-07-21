@@ -40,7 +40,7 @@ def main():
         if 'text' in py_stru.keys():
             #Encode that tweet in readable characters
             tweet = py_stru['text'].encode('utf-8')
-            #Exclude non-letter characters that are not in the sentiment dictionary
+            #Exclude non-letter characters
             nice_tweet = re.sub('[' + excluded + ']', " ", tweet)
       	    #List of the terms in the tweet
 	    terms_in_tweet = set(nice_tweet.lower().split())
