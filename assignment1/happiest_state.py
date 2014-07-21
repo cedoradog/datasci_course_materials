@@ -4,13 +4,74 @@ import json
 import sys
 import string
 import re
-from state_codes2names import states
 
-def hw():
-    print 'Hello, world!'
+'''Take the Python Dictionary of US States and Territories
+Disponible en 
+http://code.activestate.com/recipes/
+577305-python-dictionary-of-us-states-and-territories/'''
 
-def lines(fp):
-    print str(len(fp.readlines()))
+states = {
+        'AK': 'Alaska',
+        'AL': 'Alabama',
+        'AR': 'Arkansas',
+        'AS': 'American Samoa',
+        'AZ': 'Arizona',
+        'CA': 'California',
+        'CO': 'Colorado',
+        'CT': 'Connecticut',
+        'DC': 'District of Columbia',
+        'DE': 'Delaware',
+        'FL': 'Florida',
+        'GA': 'Georgia',
+        'GU': 'Guam',
+        'HI': 'Hawaii',
+        'IA': 'Iowa',
+        'ID': 'Idaho',
+        'IL': 'Illinois',
+        'IN': 'Indiana',
+        'KS': 'Kansas',
+        'KY': 'Kentucky',
+        'LA': 'Louisiana',
+        'MA': 'Massachusetts',
+        'MD': 'Maryland',
+        'ME': 'Maine',
+        'MI': 'Michigan',
+        'MN': 'Minnesota',
+        'MO': 'Missouri',
+        'MP': 'Northern Mariana Islands',
+        'MS': 'Mississippi',
+        'MT': 'Montana',
+        'NA': 'National',
+        'NC': 'North Carolina',
+        'ND': 'North Dakota',
+        'NE': 'Nebraska',
+        'NH': 'New Hampshire',
+        'NJ': 'New Jersey',
+        'NM': 'New Mexico',
+        'NV': 'Nevada',
+        'NY': 'New York',
+        'OH': 'Ohio',
+        'OK': 'Oklahoma',
+        'OR': 'Oregon',
+        'PA': 'Pennsylvania',
+        'PR': 'Puerto Rico',
+        'RI': 'Rhode Island',
+        'SC': 'South Carolina',
+        'SD': 'South Dakota',
+        'TN': 'Tennessee',
+        'TX': 'Texas',
+        'UT': 'Utah',
+        'VA': 'Virginia',
+        'VI': 'Virgin Islands',
+        'VT': 'Vermont',
+        'WA': 'Washington',
+        'WI': 'Wisconsin',
+        'WV': 'West Virginia',
+        'WY': 'Wyoming'
+}
+
+#Build the dictionary inverse of states that maps state_name:state_code
+codes = {states[state_code]:state_code for state_code in states.keys()}
 
 def has_text(py_line):
     answer = False
@@ -28,12 +89,12 @@ def has_US_place_full_name(py_line):
     return answer
 
 def find_state(place):
-    state_name = ''
-    if place[-2:] in states.keys():
-        state_name = states[place[-2:]]
-    elif place[:-5] in states.values():
-        state_name = place[:-5]
-    return state_name
+    state_code = ''
+    if place[-2:] in codes.values():
+        state_code = place[-2:]
+    elif place[:-5] in codes.keys():
+        state_code = codes[place[:-5]]
+    return state_code
 
 def create_sent_scoring(sent_file_dir):
     sent_file = open(sent_file_dir, "r")
@@ -53,10 +114,11 @@ def main():
     allowed = string.lowercase + string.uppercase + " "
     #Excluded characters in tweets
     excluded = string.printable.translate(None, allowed)
-    #Initialize a dictionary that maps state_name:state_sentiment
-    state_sentiment = {state_name:0 for state_name in states.values()}
-    count = 0
+    '''Initialize a dictionary that maps 
+    state_code:[state_sentiment, state_cases]'''
+    state_sentiment = {state_code:[0, 0] for state_code in codes.values()}
     #For every tweet in json format
+    count = 0
     for line in tweet_file:
         #Format as python dictionary
         py_line = json.loads(line)
@@ -66,7 +128,7 @@ def main():
             #Encode that tweet in readable characters
             tweet = py_line['text'].encode('utf-8')
             place = str(py_line['place']['full_name'].encode('utf-8'))
-            state_name = find_state(place)
+            state = find_state(place)
             #Exclude non-letter characters
             nice_tweet = re.sub('[' + excluded + ']', " ", tweet)
             #Calculate the tweet score
@@ -78,17 +140,29 @@ def main():
                     #add its score to the tweet score
                     tweet_score = tweet_score + sentiment[term]
             #Add the total tweet_score to the state_sentiment
-            if state_name != '':
-                state_sentiment[state_name] += tweet_score
-    max_score, happiest_state = max([state_sentiment[state], state] for state in state_sentiment.keys())
-    #Not required: Print the content of the state_sentiment dictionary
-    #for state in state_sentiment.keys():
-    #    print(state + " " + str(state_sentiment[state]))
-    print happiest_state
-    print count
+            if state != '':
+                state_sentiment[state][0] += tweet_score
+                state_sentiment[state][1] += 1
+    #Calculate the mean of each state score
+    mean_state_sentiment = {state:
+                            float(state_sentiment[state][0]) / 
+                            state_sentiment[state][1] 
+                            for state in state_sentiment.keys()
+                            if state_sentiment[state][1] != 0}
+    max_score, happiest_state = max([mean_state_sentiment[state], state] 
+                                    for state in mean_state_sentiment.keys())
+    #Not required: Print the content of the state_sentiment and the
+    #mean_state_sentiment dictionaries
+    # for state in mean_state_sentiment.keys():
+    #     print(state + ' ' + str(state_sentiment[state][0]) + ' ' +
+    #           str(state_sentiment[state][1]) + ' ' +
+    #           str(mean_state_sentiment[state]))
+    #Print the happiest_state
+    print(happiest_state)
+    #Not required: Print the number of tweets taken into account
+    #print(str(count) + " tweets registered.")
     #Close tweet_file
-    tweet_file.close()
-    
+    tweet_file.close()    
 
 if __name__ == '__main__':
     main()
