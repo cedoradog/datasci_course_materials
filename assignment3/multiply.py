@@ -44,10 +44,12 @@ def mapper(record):
 
 def reducer(key, infos):
     """
-    Group 
+    Group by key and sum the products of corresponding values
+    of both matrices.
     """
-    # key: 
-    # value:
+    # key: tuple (i, j) w/ the position of the value
+    # value: infos about every A and B entry used to compute the 
+    #(i, j) entry of the product AB
     row, col = key[0], key[1]
     for info in infos:
         value = sum([infoA[2] * infoB[2] for infoA in infos 
@@ -56,8 +58,8 @@ def reducer(key, infos):
                          infoB[0] == "b" and
                          infoA[1] == infoB[1])])
 
-    result = [row, col, value]
-    mr.emit(result)
+    record = [row, col, value]
+    mr.emit(record)
 
 # Do not modify below this line
 # =============================
