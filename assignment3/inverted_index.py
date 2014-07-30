@@ -22,7 +22,8 @@ def mapper(record):
     # key: document identifier
     # value: document contents
     doc_id = record[0]
-    text = re.sub(r'[^\w]', ' ', record[1]).lower()
+    #text = re.sub(r'[^\w]', ' ', record[1])
+    text = record[1]
     words = text.split()
     #Leave one occurrence for each word
     unique_words = set(words)

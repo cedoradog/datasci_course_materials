@@ -3,8 +3,8 @@ import sys
 
 """
 Returns an symetric friendship relation.
-Given a set of records, (person, friend), completes the relation of
-friendship to be symmetric and return it as a set of tuples 
+Given a set of records, (person, friend), completes the asymmetric
+relationships to be symmetric and return it as a set of tuples
 (person, friend).
 """
 
@@ -16,36 +16,27 @@ mr = MapReduce.MapReduce()
 def mapper(record):
     """
     For each record (person, friend) generates a record 
-    (first_person, (second_person, direction_of_friendship)).
+    (first_person, second_person).
     """
     # key: first_person (alphabetically)
-    # value: tuple (second_person, direction_of_friendship)
+    # value: second_person
     sorted_record = sorted(record)
     first_person = sorted_record[0]
     second_person = sorted_record[1]
-    if sorted_record == record:
-        direction = 1
-    else:
-        direction = -1
-    friendship = [second_person, direction]        
-    mr.emit_intermediate(first_person, friendship)
+    mr.emit_intermediate(first_person, second_person)
 
-def reducer(first_person, friendships):
+def reducer(first_person, friends):
     """
     For each person count the number of friends
     """
     # key: person
-    # value: friend_record
-    sym_friendship = set()
-    for friendship_record in friendships:
-        second_person = friendship_record[0]
-###        if ((second_person, 1) in record or
-   #         (second_person, -1) in record):
-        new_friendships = {(first_person, second_person), 
-                           (second_person, first_person)}
-        sym_friendship = sym_friendship.union(new_friendships) 
-    for friendship in sym_friendship:
-        mr.emit(friendship)
+    # value: list of friends, duplicated in symmetric cases
+    symmetric_friends = {friend for friend in friends if 
+                  friends.count(friend) > 1}
+    asymmetric_friends = set(friends) - symmetric_friends
+    for friend in asymmetric_friends:
+        mr.emit((first_person, friend))
+        mr.emit((friend, first_person))
 
 # Do not modify below this line
 # =============================

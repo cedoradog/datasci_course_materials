@@ -1,6 +1,5 @@
 import MapReduce
 import sys
-import re
 
 """
 Compute matrix multiplication.
@@ -58,7 +57,7 @@ def reducer(key, infos):
                          infoB[0] == "b" and
                          infoA[1] == infoB[1])])
 
-    record = [row, col, value]
+    record = (row, col, value)
     mr.emit(record)
 
 # Do not modify below this line
